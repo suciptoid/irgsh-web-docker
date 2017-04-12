@@ -1,16 +1,18 @@
 FROM debian:jessie-slim
 
-# PyEnv
+MAINTAINER BlankOn Developer <blankon-dev@googlegroups.com>
+
+# Environment for PyEnv purpose
 ENV HOME /root
 ENV PYENV_ROOT $HOME/.pyenv
 ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
-# Pasang dependensi yang diperlukan
+# Debian Deps
 RUN apt-get update -qq && apt-get install -y -qqq make build-essential libssl-dev zlib1g-dev libbz2-dev \
 libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils sudo \
 python python-pip python-dev python-debian dpkg-dev rabbitmq-server git-core nginx libpq-dev git vim net-tools
 
-# Konfigurasi .bashrc untuk bisa memanggil pyenv dari bash
+# Configure PyEnv for python 2.6.6 support
 RUN curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash &&\
 	/bin/bash -c "echo 'export PATH=\"$HOME/.pyenv/bin:${PATH}\"' >> ${HOME}/.bashrc" &&\
 	/bin/bash -c "echo 'eval \"\$(pyenv init -)\"' >> ${HOME}/.bashrc" &&\
@@ -22,6 +24,7 @@ RUN curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/p
 
 WORKDIR ~/src/
 
+# Clone the repo
 RUN git clone git://github.com/BlankOn/python-irgsh.git &&\
 	git clone git://github.com/BlankOn/irgsh-web.git && \
 	git clone git://github.com/BlankOn/irgsh-node.git && \
@@ -33,10 +36,10 @@ RUN ln -s ../python-irgsh/irgsh && \
 	ln -s ../irgsh-node/irgsh_node && \
 	ln -s ../irgsh-repo/irgsh_repo
 
-# Buat berkas yang dibutuhkan dengan bootstrap.py
-RUN python -V && python bootstrap.py
+# Bootstrap
+RUN python bootstrap.py
 
-# Small Hack
+# Small Hack for pyparsing and pip deps
 RUN sed -i 's/(MARKER_EXPR())/(MARKER_EXPR)/' $HOME/.pyenv/versions/2.6.6/lib/python2.6/site-packages/packaging/requirements.py &&\
 	rm -rf eggs/pyparsing* &&\
 	pip uninstall pyparsing -y &&\
@@ -49,6 +52,6 @@ RUN sed -i 's/(MARKER_EXPR())/(MARKER_EXPR)/' $HOME/.pyenv/versions/2.6.6/lib/py
 # Expose Port
 EXPOSE 8080
 
-CMD ["pyenv", "shell", "2.6.6"]
-CMD ["python", "manage.py", "runfcgi", "method=prefork", "host=0.0.0.0", "port=8080"]
+ENTRYPOINT ["./bin/django"]
+CMD ["runfcgi", "method=prefork", "host=0.0.0.0", "port=8080", "daemonize=false"]
 
