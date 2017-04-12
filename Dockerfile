@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:jessie-slim
 
 # Pasang dependensi yang diperlukan
 RUN apt-get update && apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
@@ -12,21 +12,8 @@ RUN curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/p
 RUN /bin/bash -c "echo 'export PATH=\"~/.pyenv/bin:${PATH}\"' >> ${HOME}/.bashrc" &&\
 	/bin/bash -c "echo 'eval \"\$(pyenv init -)\"' >> ${HOME}/.bashrc" &&\
 	/bin/bash -c "echo 'eval \"\$(pyenv virtualenv-init -)\"' >> ${HOME}/.bashrc" &&\
-	/bin/bash -c "source ${HOME}/.bashrc"
-
-#RUN ["ln", "-s", "${HOME}/.pyenv/bin/pyenv", "/usr/bin/pyenv"] # tidak perlu ini
-
-# Pasang Python 2.6.6 kemudian pakai shell pyenv 2.6.6 
-RUN /bin/bash -c "/root/.pyenv/bin/pyenv install 2.6.6"
-#RUN bash -c /root/.pyenv/bin/pyenv shell 2.6.6 # terjadi galat
-#RUN ["pyenv","shell","2.6.6"] # terjadi galat pada container_linux.go disini
-
-# Buat direktori $HOME/.bin/ untuk tautan penggunaan python2.6.6 nantinya
-#RUN mkdir /root/.bin/
-#RUN ["ln","-s", "/root/.pyenv/versoins/2.6.6/bin/python2.6", "/root/.bin/python"]
-#RUN /bin/bash -c "echo 'export PATH=\"~/.bin:${PATH}\"' >> ${HOME}/.bashrc"
-#RUN /bin/bash -c "source ${HOME}/.bashrc"
-# Langkah di atas (bagian ini) mungkin bisa di lewati saja.
+	/bin/bash -c "source ${HOME}/.bashrc" && \ 
+	/bin/bash -c "/root/.pyenv/bin/pyenv install 2.6.6"
 
 # Klon data dari repositori github
 RUN mkdir /root/src/
@@ -36,7 +23,7 @@ RUN git clone git://github.com/BlankOn/python-irgsh.git &&\
 	git clone git://github.com/BlankOn/irgsh-node.git && \
 	git clone git://github.com/BlankOn/irgsh-repo.git
 
-WORKDIR irgsh-web
+WORKDIR /root/src/irgsh-web/
 RUN ln -s ../python-irgsh/irgsh && \
 	ln -s ../irgsh-node/irgsh_node && \
 	ln -s ../irgsh-repo/irgsh_repo
