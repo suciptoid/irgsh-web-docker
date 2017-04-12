@@ -33,7 +33,7 @@ RUN ["python","bootstrap.py"]
 
 # Small Hack
 RUN pyenv shell 2.6.6 &&\
-	sed -i 's/(MARKER_EXPR())/(MARKER_EXPR)/' ~/.pyenv/versions/2.6.6/lib/python2.6/site-packages/packaging/requirements.py
+	sed -i 's/(MARKER_EXPR())/(MARKER_EXPR)/' ~/.pyenv/versions/2.6.6/lib/python2.6/site-packages/packaging/requirements.py &&\
 	rm -rf eggs/pyparsing* &&\
 	pip uninstall pyparsing -y &&\
 	pip install pyparsing &&\
